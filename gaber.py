@@ -7,7 +7,8 @@ import numpy as np
 import time
 from PIL import Image
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-
+import spacy
+nlp = spacy.load('it')
 
 gaber = pd.read_csv('data/gaber_final1.csv')
 emotions = pd.read_csv('data/emotions.csv')
@@ -23,10 +24,47 @@ with title_container:
         st.image(image, width=700)
     
 
+
+
+# =============================================================================
+# @inproceedings{DBLP:conf/lrec/PassaroL16,
+#   author    = {Lucia C. Passaro and
+#                Alessandro Lenci},
+#   editor    = {Nicoletta Calzolari and
+#                Khalid Choukri and
+#                Thierry Declerck and
+#                Sara Goggi and
+#                Marko Grobelnik and
+#                Bente Maegaard and
+#                Joseph Mariani and
+#                H{\'{e}}l{\`{e}}ne Mazo and
+#                Asunci{\'{o}}n Moreno and
+#                Jan Odijk and
+#                Stelios Piperidis},
+#   title     = {Evaluating Context Selection Strategies to Build Emotive Vector Space
+#                Models},
+#   booktitle = {Proceedings of the Tenth International Conference on Language Resources
+#                and Evaluation {LREC} 2016, Portoro{\v{z}}, Slovenia, May 23-28, 2016},
+#   publisher = {European Language Resources Association {(ELRA)}},
+#   year      = {2016},
+#   url       = {http://www.lrec-conf.org/proceedings/lrec2016/summaries/637.html},
+#   timestamp = {Mon, 19 Aug 2019 15:22:52 +0200},
+#   biburl    = {https://dblp.org/rec/conf/lrec/PassaroL16.bib},
+#   bibsource = {dblp computer science bibliography, https://dblp.org}
+# }
+# 
+# 
+# =============================================================================
+
+
+
+
+
+
+
 def emotion (sentence):
    
-    list_tokens= list(gaber[gaber['titolo']==sentence]['lemmas'])[0].split()
-    song = extractSongScore(list_tokens)
+    song = extractWordScore(list(gaber[gaber['titolo']==sentence]['lemmas'])[0])
     emotion =max(song, key=song.get)
     
     word_cloud(list(gaber[gaber['titolo']==sentence]['lemmas'])[0])
@@ -39,6 +77,7 @@ def emotion (sentence):
     print()
     st.markdown('**Emozione: **')
     result=st.markdown(f'Nella canzone **{sentence.capitalize()}** prevale un sentimento di **{emotion.capitalize()}**')
+    radar_chart(song)
     plot([list(gaber[gaber['titolo']==sentence]['lemmas'])[0]])
     return result
 
@@ -103,74 +142,38 @@ def word_cloud(sentence):
     plt.imshow(wc.recolor(colormap='Reds'), interpolation="bilinear")
     plt.axis('off')
     return st.pyplot(fig)
-# =============================================================================
-# def plot2(sentence):
-#     
-#     plt.figure(figsize=(9,10))
-#     sns.barplot(sentence["Frequenza"],sentence["Termine"])
-#     plt.title("Top 10 Bigrams")
-#     
-#     plt.show()
-# 
-#     return plt.show() 
-# =============================================================================
 
-# =============================================================================
-# def plot(sentence):
-#     level = st.slider("Guarda la Frequenza dei Termini: 1. Unigrammi, 2. Bigrammi, 3. Trigrammi", 1, 3)
-#     if level ==1:
-#         sentence=ngram_df(sentence,(1,1),10)
-#         fig, (ax2) = plt.subplots(1,1,figsize=[4, 4])
-#         plt.figure(figsize=(9,10))
-#         sns.barplot(sentence["Occorrenza"],sentence["Termine"], color ='red')
-#         plt.title("Top 10 Unigrammi")
-#     elif level==2:
-#         sentence=ngram_df(sentence,(2,2),10)
-#         fig, (ax2) = plt.subplots(1,1,figsize=[8, 6])
-#         plt.figure(figsize=(9,10))
-#         sns.barplot(sentence["Occorrenza"],sentence["Termine"], color ='red')
-#         plt.title("Top 10 Bigrammi")
-#     else:
-#         sentence=ngram_df(sentence,(3,3),10)
-#         fig, (ax2) = plt.subplots(1,1,figsize=[8, 6])
-#         plt.figure(figsize=(9,10))
-#         sns.barplot(sentence["Occorrenza"],sentence["Termine"], color ='red')
-#         plt.title("Top 10 Trigrammi")
-#     
-#   
-#     
-#     return st.pyplot(plt,use_container_width=True)
-# 
-# =============================================================================
+
+
+def radar_chart (song):
+    fig = px.line_polar(r=list(song.values()),theta=list(song.keys()),line_close=True,template='plotly_white')
+
+
+
+    fig.update_traces(fill='toself',line_color = 'red',mode="markers")
+    return st.plotly_chart(fig,use_container_width=True)
+
+
+
+
 def extractWordScore(token):
     wordScore = {}
-        
-    wordEmotions = emotions[emotions['lemma'] == token]
-    if wordEmotions.empty:
-        wordEmotions = emotions[emotions['word'] == token]
-    if not wordEmotions.empty:
-        wordScore = wordEmotions.drop(['word','cosine','lemma'], axis=1).set_index('emotion').T.to_dict('record')[0]
-    return wordScore
-
-def extractSongScore(song):
     songScore = {}
-    i = 0
-    wordsScore = []
-    for t in song:
-        score = extractWordScore(t)
-        if score:
-            increment = False
-            for k in score.keys():
-                songScore[k] = songScore.get(k, 0.0) + score[k]
-                if not increment:
-                    i += 1
-                    increment = True
-                songScore[k] = songScore.get(k, 0.0) + score[k]
-    if i > 0:
-        for k in songScore:
-            songScore[k] = songScore[k] / i
-    
+    token= nlp(token)
+    taggedtokens = [token.pos_ for token in token]
+    list_token=list(zip(token,taggedtokens)) 
+    for i in list_token:
+        wordEmotions = emotions[(emotions['lemma']==str(i[0]))&(emotions['pos']==str(i[1]))]
+        if not wordEmotions.empty:
+            wordScore = wordEmotions.drop(['word','cosine','lemma','pos'], axis=1).set_index('emotion').T.to_dict('record')[0]
+            for k in wordScore.keys():
+                songScore[k] = songScore.get(k, 0.0) + wordScore[k]
+        
     return songScore
+
+
+
+
 
 if __name__ == '__main__':
 	main()
