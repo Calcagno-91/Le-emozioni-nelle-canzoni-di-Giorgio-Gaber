@@ -107,7 +107,7 @@ def plot(sentence):
                      color_continuous_scale=px.colors.sequential.Reds,orientation='h',color='Occorrenza',text='Occorrenza')
         fig.update_layout(coloraxis_showscale=False,plot_bgcolor='rgba(0,0,0,0)')
     
-    return st.write(fig,use_container_width=True)
+    return st.plotly_chart(fig,use_container_width=True)
 
 from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
 
