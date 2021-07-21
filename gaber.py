@@ -8,6 +8,8 @@ import time
 from PIL import Image
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import spacy
+import spacy.cli
+spacy.cli.download('it')
 nlp = spacy.load('it')
 
 gaber = pd.read_csv('data/gaber_final1.csv')
@@ -20,9 +22,6 @@ title_container = st.beta_container()
 image = Image.open('data/gaberimg.jpg')
 
 st.image(image)
-
-
-
 
 # =============================================================================
 # @inproceedings{DBLP:conf/lrec/PassaroL16,
@@ -53,11 +52,6 @@ st.image(image)
 # 
 # 
 # =============================================================================
-
-
-
-
-
 
 
 def emotion (sentence):
