@@ -17,12 +17,10 @@ emotions = pd.read_csv('data/emotions.csv')
 
 
 title_container = st.beta_container()
-col1, col2 = st.beta_columns([1, 20])
 image = Image.open('data/gaberimg.jpg')
-with title_container:
-    with col1:
-        st.image(image, width=700)
-    
+
+st.image(image)
+
 
 
 
@@ -78,18 +76,20 @@ def emotion (sentence):
     st.markdown('**Emozione: **')
     result=st.markdown(f'Nella canzone **{sentence.capitalize()}** prevale un sentimento di **{emotion.capitalize()}**')
     radar_chart(song)
+
     plot([list(gaber[gaber['titolo']==sentence]['lemmas'])[0]])
+
     return result
 
 def main():
-    
-    st.title('Le Emozioni nelle Canzoni di Giorgio Gaber')
-    
+    html_temp = """<div style="background-color:#C72A2A;padding:1.0px;border-radius: 25px ;border-radius: 25px;opacity: 0.7">
+    <h1 style="color:white;text-align:center;">Le Emozioni nelle Canzoni di Giorgio Gaber</h1>
+    </div><br>"""
+    st.markdown(html_temp,unsafe_allow_html=True)    
     sentence= st.text_input('Digita il titolo della Canzone','la libertà')
     sentence=sentence.strip().lower()
     if sentence not in gaber['titolo'].values:
-        
-           st.text(f'La canzone {sentence} non è presente nel database, riprova')
+        st.text(f'La canzone {sentence} non è presente nel database, riprova')
     else:
         results= emotion(sentence)
     
@@ -99,21 +99,21 @@ def plot(sentence):
     level = st.slider("Guarda la Frequenza dei Termini: 1. Unigrammi, 2. Bigrammi, 3. Trigrammi", 1, 3)
     if level ==1:
         sentence=ngram_df(sentence,(1,1),10)
-        fig = px.bar(sentence, x='Occorrenza', y='Termine',title= 'Frequenza termini nella canzone',template='plotly_white',
-                     color_continuous_scale=px.colors.sequential.Redor,orientation='h',color='Occorrenza',text='Occorrenza')
-        fig.update_layout(coloraxis_showscale=False)
+        fig = px.bar(sentence, x='Occorrenza', y='Termine',template='plotly_white',
+                     color_continuous_scale=px.colors.sequential.Reds,orientation='h',color='Occorrenza',text='Occorrenza')
+        fig.update_layout(coloraxis_showscale=False, plot_bgcolor='rgba(0,0,0,0)')
     elif level==2:
         sentence=ngram_df(sentence,(2,2),10)
-        fig = px.bar(sentence, x='Occorrenza', y='Termine',title= 'Frequenza Bigrammi nella canzone',template='plotly_white',
-                     color_continuous_scale=px.colors.sequential.Redor,orientation='h',color='Occorrenza',text='Occorrenza')
-        fig.update_layout(coloraxis_showscale=False)
+        fig = px.bar(sentence, x='Occorrenza', y='Termine',template='plotly_white',
+                     color_continuous_scale=px.colors.sequential.Reds,orientation='h',color='Occorrenza',text='Occorrenza')
+        fig.update_layout(coloraxis_showscale=False,plot_bgcolor='rgba(0,0,0,0)')
     else:
         sentence=ngram_df(sentence,(3,3),10)
-        fig = px.bar(sentence, x='Occorrenza', y='Termine',title= 'Frequenza Trigrammi nella canzone',template='plotly_white',
-                     color_continuous_scale=px.colors.sequential.Redor,orientation='h',color='Occorrenza',text='Occorrenza')
-        fig.update_layout(coloraxis_showscale=False)
+        fig = px.bar(sentence, x='Occorrenza', y='Termine',template='plotly_white',
+                     color_continuous_scale=px.colors.sequential.Reds,orientation='h',color='Occorrenza',text='Occorrenza')
+        fig.update_layout(coloraxis_showscale=False,plot_bgcolor='rgba(0,0,0,0)')
     
-    return st.plotly_chart(fig,use_container_width=True)
+    return st.write(fig,use_container_width=True)
 
 from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
 
@@ -141,7 +141,7 @@ def word_cloud(sentence):
     wc.generate(sentence)
     plt.imshow(wc.recolor(colormap='Reds'), interpolation="bilinear")
     plt.axis('off')
-    return st.pyplot(fig)
+    return st.pyplot(fig,use_container_width=True)
 
 
 
@@ -150,7 +150,7 @@ def radar_chart (song):
 
 
 
-    fig.update_traces(fill='toself',line_color = 'red',mode="markers")
+    fig.update_traces(fill='toself',line_color = 'red',mode="markers+lines")
     return st.plotly_chart(fig,use_container_width=True)
 
 
