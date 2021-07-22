@@ -9,7 +9,7 @@ from PIL import Image
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import spacy
 import spacy.cli
-spacy.cli.download('it_core_news_sm')
+#spacy.cli.download('it_core_news_sm')
 nlp = spacy.load('it_core_news_sm')
 
 gaber = pd.read_csv('data/gaber_final1.csv')
