@@ -108,6 +108,7 @@ def plot(sentence):
         fig.update_layout(coloraxis_showscale=False,plot_bgcolor='rgba(0,0,0,0)')
     for data in fig.data:
 	data["width"]=0.69
+	
     return st.plotly_chart(fig,use_container_width=True)
 
 from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
