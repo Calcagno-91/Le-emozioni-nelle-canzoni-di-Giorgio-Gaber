@@ -106,8 +106,7 @@ def plot(sentence):
         fig = px.bar(sentence, x='Occorrenza', y='Termine',template='plotly_white',
                      color_continuous_scale=px.colors.sequential.Reds,orientation='h',color='Occorrenza',text='Occorrenza')
         fig.update_layout(coloraxis_showscale=False,plot_bgcolor='rgba(0,0,0,0)')
-    for data in fig.data:
-	data["width"]=0.69
+    
 	
     return st.plotly_chart(fig,use_container_width=True)
 
